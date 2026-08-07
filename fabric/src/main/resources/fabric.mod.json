@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "afk",
   "version": "${version}",
-  "name": "AFK",
+  "name": "afkmon-mc",
   "description": "AFK detection with rotating status rings around away players.",
   "authors": ["Earu"],
   "contact": {
