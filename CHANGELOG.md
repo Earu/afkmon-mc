@@ -1,5 +1,2 @@
-- Initial release.
-- Client-reported AFK detection from input, look, and window focus.
-- Spinning ring halo with `AFK`, `TABBED OUT`, and `TIMING OUT` labels.
-- Chat announcements, welcome-back message, and sound cues on transitions.
-- Server-side timing-out detection from stalled keepalives.
+- Mod icon.
+- Releases now also publish to CurseForge.
