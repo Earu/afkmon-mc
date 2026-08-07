@@ -7,6 +7,6 @@ pluginManagement {
     }
 }
 
-rootProject.name = "afk-mc"
+rootProject.name = "afkmon-mc"
 
 include("common", "neoforge", "fabric")

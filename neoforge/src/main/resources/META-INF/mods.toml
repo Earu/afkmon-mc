@@ -1,7 +1,7 @@
 modLoader = "kotlinforforge"
 loaderVersion = "[4,)"
 license = "AGPL-3.0"
-issueTrackerURL = "https://github.com/Earu/afk-mc/issues"
+issueTrackerURL = "https://github.com/Earu/afkmon-mc/issues"
 
 [[mods]]
 modId = "afk"
