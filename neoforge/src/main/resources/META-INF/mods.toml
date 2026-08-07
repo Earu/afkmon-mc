@@ -6,7 +6,7 @@ issueTrackerURL = "https://github.com/Earu/afk-mc/issues"
 [[mods]]
 modId = "afk"
 version = "${version}"
-displayName = "AFK"
+displayName = "afkmon-mc"
 logoFile = "assets/afk/icon.png"
 description = '''AFK detection with rotating status rings around away players.'''
 authors = "Earu"
