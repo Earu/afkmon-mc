@@ -7,7 +7,6 @@ import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import gg.earu.afk.core.AfkConfig
 import net.minecraft.client.Minecraft
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object AfkClient {
 
-    var sendPayload: (CustomPacketPayload) -> Unit = {}
+    var sendPayload: (AfkPayloads.Message) -> Unit = {}
     var canSend: () -> Boolean = { false }
 
     var config: ClientConfig = ClientConfig()

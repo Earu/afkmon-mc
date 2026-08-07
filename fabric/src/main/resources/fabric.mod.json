@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "AFK",
   "description": "AFK detection with rotating status rings around away players.",
-  "authors": ["Earu"],
+  "authors": [
+    "Earu"
+  ],
   "contact": {
     "issues": "https://github.com/Earu/afk-mc/issues",
     "sources": "https://github.com/Earu/afk-mc"
@@ -26,12 +28,14 @@
       }
     ]
   },
-  "mixins": ["afk.mixins.json"],
+  "mixins": [
+    "afk.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.16.0",
     "fabric-api": "*",
     "fabric-language-kotlin": ">=1.13.0",
-    "minecraft": "~1.21.1",
-    "java": ">=21"
+    "minecraft": "~1.20.1",
+    "java": ">=17"
   }
 }

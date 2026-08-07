@@ -2,29 +2,28 @@ package gg.earu.afk.neoforge
 
 import gg.earu.afk.Afk
 import gg.earu.afk.client.AfkClient
+import gg.earu.afk.client.AfkOverlay
 import gg.earu.afk.client.render.AfkRingsRenderer
 import net.minecraft.client.Minecraft
-import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket
-import net.neoforged.bus.api.SubscribeEvent
-import gg.earu.afk.client.AfkOverlay
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
-import net.neoforged.neoforge.client.event.ClientTickEvent
-import net.neoforged.neoforge.client.event.RenderGuiEvent
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent
+import net.minecraftforge.client.event.ClientPlayerNetworkEvent
+import net.minecraftforge.client.event.RenderGuiEvent
+import net.minecraftforge.client.event.RenderLevelStageEvent
+import net.minecraftforge.event.TickEvent
+import net.minecraftforge.eventbus.api.SubscribeEvent
 
 object ClientEvents {
     fun wire() {
         AfkClient.init(Afk.platform)
-        AfkClient.sendPayload = { payload ->
-            Minecraft.getInstance().connection?.send(ServerboundCustomPayloadPacket(payload))
-        }
+        AfkClient.sendPayload = { message -> Payloads.channel.sendToServer(message) }
         AfkClient.canSend = {
-            Minecraft.getInstance().connection?.hasChannel(gg.earu.afk.net.AfkPayloads.ReportPayload.TYPE) == true
+            val connection = Minecraft.getInstance().connection?.connection
+            connection != null && Payloads.channel.isRemotePresent(connection)
         }
     }
 
     @SubscribeEvent
-    fun onClientTick(@Suppress("UNUSED_PARAMETER") event: ClientTickEvent.Post) {
+    fun onClientTick(event: TickEvent.ClientTickEvent) {
+        if (event.phase != TickEvent.Phase.END) return
         AfkClient.tick(Minecraft.getInstance())
     }
 
@@ -35,7 +34,7 @@ object ClientEvents {
             event.poseStack,
             Minecraft.getInstance().renderBuffers().bufferSource(),
             event.camera,
-            event.partialTick.getGameTimeDeltaPartialTick(false),
+            event.partialTick,
         )
     }
 

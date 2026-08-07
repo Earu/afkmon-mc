@@ -1,5 +1,5 @@
 modLoader = "kotlinforforge"
-loaderVersion = "[5,)"
+loaderVersion = "[4,)"
 license = "AGPL-3.0"
 issueTrackerURL = "https://github.com/Earu/afk-mc/issues"
 
@@ -11,19 +11,16 @@ logoFile = "assets/afk/icon.png"
 description = '''AFK detection with rotating status rings around away players.'''
 authors = "Earu"
 
-[[mixins]]
-config = "afk.mixins.json"
-
 [[dependencies.afk]]
-modId = "neoforge"
-type = "required"
-versionRange = "[21.1.0,)"
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.afk]]
 modId = "minecraft"
-type = "required"
-versionRange = "[1.21.1]"
+mandatory = true
+versionRange = "[1.20.1]"
 ordering = "NONE"
 side = "BOTH"

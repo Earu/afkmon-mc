@@ -1,34 +1,23 @@
 package gg.earu.afk.net
 
-import gg.earu.afk.Afk
-import io.netty.buffer.ByteBuf
-import net.minecraft.core.UUIDUtil
-import net.minecraft.network.codec.ByteBufCodecs
-import net.minecraft.network.codec.StreamCodec
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.minecraft.resources.ResourceLocation
 import java.util.UUID
 
 /**
- * Wire format shared by every loader. All channels are OPTIONAL: vanilla clients and servers
- * interoperate untouched, they simply never report or draw anything.
+ * Wire messages shared by every loader, plain data on this branch: 1.20.1 predates
+ * CustomPacketPayload/StreamCodec, so each loader module owns its own serialization
+ * (SimpleChannel on Forge, PacketByteBuf channels on Fabric). All channels are OPTIONAL:
+ * vanilla clients and servers interoperate untouched.
  */
 object AfkPayloads {
+    const val NAMESPACE = "afk"
+
+    sealed interface Message
 
     /** C->S: the client's own verdict on its input and window focus. */
-    class ReportPayload(val afk: Boolean, val tabbedOut: Boolean) : CustomPacketPayload {
+    class ReportPayload(val afk: Boolean, val tabbedOut: Boolean) : Message {
         companion object {
-            val TYPE = CustomPacketPayload.Type<ReportPayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "report"),
-            )
-            val CODEC: StreamCodec<ByteBuf, ReportPayload> = StreamCodec.composite(
-                ByteBufCodecs.BOOL, ReportPayload::afk,
-                ByteBufCodecs.BOOL, ReportPayload::tabbedOut,
-                ::ReportPayload,
-            )
+            const val PATH = "report"
         }
-
-        override fun type() = TYPE
     }
 
     /**
@@ -41,34 +30,16 @@ object AfkPayloads {
         val tabbedOut: Boolean,
         val timingOut: Boolean,
         val sinceEpochMs: Long,
-    ) : CustomPacketPayload {
+    ) : Message {
         companion object {
-            val TYPE = CustomPacketPayload.Type<StatePayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "state"),
-            )
-            val CODEC: StreamCodec<ByteBuf, StatePayload> = StreamCodec.composite(
-                UUIDUtil.STREAM_CODEC, StatePayload::player,
-                ByteBufCodecs.BOOL, StatePayload::afk,
-                ByteBufCodecs.BOOL, StatePayload::tabbedOut,
-                ByteBufCodecs.BOOL, StatePayload::timingOut,
-                ByteBufCodecs.VAR_LONG, StatePayload::sinceEpochMs,
-                ::StatePayload,
-            )
+            const val PATH = "state"
         }
-
-        override fun type() = TYPE
     }
 
     /** S->C: the server's afk threshold, so clients report on the server's terms. */
-    class ConfigPayload(val afkTimeSeconds: Int) : CustomPacketPayload {
+    class ConfigPayload(val afkTimeSeconds: Int) : Message {
         companion object {
-            val TYPE = CustomPacketPayload.Type<ConfigPayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "config"),
-            )
-            val CODEC: StreamCodec<ByteBuf, ConfigPayload> =
-                ByteBufCodecs.VAR_INT.map(::ConfigPayload) { it.afkTimeSeconds }
+            const val PATH = "config"
         }
-
-        override fun type() = TYPE
     }
 }

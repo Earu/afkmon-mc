@@ -153,9 +153,10 @@ object AfkRingsRenderer {
         val g = (color ushr 8) and 0xFF
         val b = color and 0xFF
         for (v in verts) {
-            buffer.addVertex(matrix, v.x, v.y, v.z).setColor(r, g, b, a)
+            val vertex = buffer.vertex(matrix, v.x, v.y, v.z).color(r, g, b, a)
             // The see-through type carries a lightmap the depth-tested one does not.
-            if (lit) buffer.setLight(LightTexture.FULL_BRIGHT)
+            if (lit) vertex.uv2(LightTexture.FULL_BRIGHT)
+            vertex.endVertex()
         }
     }
 

@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.moddev)
+    id("net.neoforged.moddev.legacyforge")
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
 }
@@ -7,6 +7,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://maven.neoforged.net/releases")
+    maven("https://maven.minecraftforge.net/")
     maven("https://repo.spongepowered.org/repository/maven-public/")
     maven("https://thedarkcolour.github.io/KotlinForForge/") {
         name = "KotlinForForge"
@@ -16,14 +17,16 @@ repositories {
 
 val commonProject = project(":common")
 
-neoForge {
-    version = libs.versions.neoforge.get()
+legacyForge {
+    // NeoForged's 1.20.1 release keeps Forge coordinates and APIs.
+    version = libs.versions.forge.get()
 
     runs {
         create("client") {
             client()
             findProperty("mcUsername")?.let { programArguments.addAll("--username", it.toString()) }
             findProperty("quickJoin")?.let { programArguments.addAll("--quickPlayMultiplayer", it.toString()) }
+            findProperty("quickPlay")?.let { programArguments.addAll("--quickPlaySingleplayer", it.toString()) }
         }
         create("server") {
             server()
@@ -39,15 +42,22 @@ neoForge {
 
 kotlin {
     jvmToolchain(21)
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.release = 17
 }
 
 base {
-    archivesName = "afk-neoforge"
+    archivesName = "afk-forge"
 }
 
 tasks.processResources {
     inputs.property("version", project.version)
-    filesMatching("META-INF/neoforge.mods.toml") {
+    filesMatching("META-INF/mods.toml") {
         expand("version" to project.version)
     }
 }
@@ -61,5 +71,5 @@ sourceSets.main {
 }
 
 dependencies {
-    implementation(libs.kff.neoforge)
+    implementation(libs.kff.forge)
 }

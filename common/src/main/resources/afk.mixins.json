@@ -1,10 +1,12 @@
 {
   "required": true,
   "package": "gg.earu.afk.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8.5",
   "client": [],
-  "mixins": ["ServerConnectionAccessor"],
+  "mixins": [
+    "ServerConnectionAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

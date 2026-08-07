@@ -5,7 +5,6 @@ import gg.earu.afk.core.AfkConfig
 import gg.earu.afk.core.NiceTime
 import gg.earu.afk.core.PlayerAfkState
 import gg.earu.afk.core.ServerConfig
-import gg.earu.afk.mixin.ServerConnectionAccessor
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import net.minecraft.ChatFormatting
@@ -13,7 +12,6 @@ import net.minecraft.Util
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
@@ -27,8 +25,15 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object AfkServer {
 
-    var sendToPlayer: (ServerPlayer, CustomPacketPayload) -> Unit = { _, _ -> }
-    var canSendTo: (ServerPlayer, CustomPacketPayload.Type<*>) -> Boolean = { _, _ -> false }
+    var sendToPlayer: (ServerPlayer, AfkPayloads.Message) -> Unit = { _, _ -> }
+    var canSendTo: (ServerPlayer) -> Boolean = { _ -> false }
+
+    /**
+     * Ms since the player's pending keepalive was sent, or -1 when none is pending. Injected per
+     * loader: Fabric reads it through the accessor mixin, Forge through SRG reflection (this
+     * toolchain cannot ship refmapped mixins on 1.20.1).
+     */
+    var keepAliveAge: (ServerPlayer, Long) -> Long = { _, _ -> -1L }
 
     lateinit var config: ServerConfig
         private set
@@ -56,7 +61,7 @@ object AfkServer {
 
     private fun trySync(player: ServerPlayer) {
         val deadline = pendingSync[player.uuid] ?: return
-        if (!canSendTo(player, AfkPayloads.ConfigPayload.TYPE)) {
+        if (!canSendTo(player)) {
             if (System.currentTimeMillis() > deadline) pendingSync.remove(player.uuid)
             return
         }
@@ -104,9 +109,7 @@ object AfkServer {
         for (player in server.playerList.players) {
             trySync(player)
 
-            val listener = player.connection as ServerConnectionAccessor
-            val timingOut = listener.`afk$isKeepAlivePending`() &&
-                now - listener.`afk$getKeepAliveTime`() > thresholdMs
+            val timingOut = keepAliveAge(player, now) > thresholdMs
 
             val previous = states[player.uuid] ?: PlayerAfkState()
             if (timingOut == previous.timingOut) continue
@@ -138,7 +141,7 @@ object AfkServer {
 
         if (!afk) welcomeBack(player, elapsed + config.afkTimeSeconds)
         if (config.soundsEnabled) {
-            val sound = if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING
+            val sound = (if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING).value()
             player.serverLevel().playSound(null, player.x, player.y, player.z, sound, SoundSource.PLAYERS, 0.6f, 1f)
         }
     }
@@ -158,7 +161,7 @@ object AfkServer {
 
     private fun broadcast(server: MinecraftServer, payload: AfkPayloads.StatePayload) {
         for (listener in server.playerList.players) {
-            if (canSendTo(listener, AfkPayloads.StatePayload.TYPE)) sendToPlayer(listener, payload)
+            if (canSendTo(listener)) sendToPlayer(listener, payload)
         }
     }
 

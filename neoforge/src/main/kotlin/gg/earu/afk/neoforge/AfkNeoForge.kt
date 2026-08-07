@@ -2,39 +2,30 @@ package gg.earu.afk.neoforge
 
 import gg.earu.afk.Afk
 import gg.earu.afk.server.AfkServer
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.ModContainer
-import net.neoforged.fml.common.Mod
-import net.neoforged.fml.loading.FMLEnvironment
-import net.neoforged.fml.loading.FMLPaths
-import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.loading.FMLEnvironment
+import net.minecraftforge.fml.loading.FMLPaths
 
 @Mod(Afk.MOD_ID)
-class AfkNeoForge(container: ModContainer, modBus: IEventBus) {
+class AfkNeoForge {
     init {
         val platform = NeoForgePlatform(
             configDir = FMLPaths.CONFIGDIR.get().resolve(Afk.MOD_ID),
             isClient = FMLEnvironment.dist.isClient,
-            modVersion = container.modInfo.version.toString(),
+            modVersion = ModList.get().getModContainerById(Afk.MOD_ID)
+                .map { it.modInfo.version.toString() }.orElse("dev"),
         )
         Afk.init(platform)
         AfkServer.init(platform)
 
-        modBus.register(ModBusEvents)
+        Payloads.register()
         ServerEvents.wire()
-        NeoForge.EVENT_BUS.register(ServerEvents)
+        MinecraftForge.EVENT_BUS.register(ServerEvents)
         if (FMLEnvironment.dist.isClient) {
             ClientEvents.wire()
-            NeoForge.EVENT_BUS.register(ClientEvents)
-        }
-    }
-
-    object ModBusEvents {
-        @SubscribeEvent
-        fun onRegisterPayloads(event: RegisterPayloadHandlersEvent) {
-            Payloads.register(event)
+            MinecraftForge.EVENT_BUS.register(ClientEvents)
         }
     }
 }

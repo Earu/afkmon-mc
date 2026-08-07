@@ -2,7 +2,7 @@
 
 AFK detection with rotating status rings around away players. A port of Garry's Mod's `afkmon` and `afkrings`.
 
-NeoForge and Fabric, Minecraft 1.21.1. Other Minecraft versions live on their own branches.
+Forge and Fabric, Minecraft 1.20.1. Other Minecraft versions live on their own branches.
 
 - Clients watch their own input and window focus and report when they go away, so being flagged means actually idle, not just standing still.
 - A spinning halo of two rings and a curved label appears around flagged players: `AFK`, `TABBED OUT`, or `TIMING OUT`.
@@ -55,11 +55,11 @@ JDK 21.
 
 ```
 ./gradlew build
-./gradlew :neoforge:runClient
+./gradlew :neoforge:runClient   # Forge client, module keeps the neoforge dir name
 ./gradlew :fabric:runClient
 ```
 
-Jars land in `neoforge/build/libs` and `fabric/build/libs`. `common` holds all the logic and is compiled into both loader jars; the loader modules are thin wiring.
+Jars land in `neoforge/build/libs` (as `afk-forge-*`) and `fabric/build/libs`. `common` holds all the logic and is compiled into both loader jars; the loader modules are thin wiring.
 
 ## Porting to a new Minecraft version
 
@@ -72,7 +72,7 @@ Two places need attention, in this order:
 javap -p -cp <minecraft.jar> net.minecraft.server.network.ServerCommonPacketListenerImpl | grep keepAlive
 ```
 
-On 1.20.1 those fields live on `ServerGamePacketListenerImpl` instead, and the whole payload layer needs rewriting since `CustomPacketPayload` does not exist there.
+This branch already carries the 1.20.1 form of both: the mixin targets `ServerGamePacketListenerImpl` and the payload layer is SimpleChannel/raw channels.
 
 Everything else (detection, durations, config, codecs, input sampling) is version-agnostic.
 
