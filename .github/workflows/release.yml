@@ -46,7 +46,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          name: AFK ${{ steps.version.outputs.version }}
+          name: afkmon-mc ${{ steps.version.outputs.version }}
           body_path: CHANGELOG.md
           make_latest: true
           files: |
@@ -59,7 +59,7 @@ jobs:
           modrinth-id: ${{ secrets.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: neoforge/build/libs/afk-neoforge-*.jar
-          name: AFK ${{ steps.version.outputs.version }} (NeoForge)
+          name: afkmon-mc ${{ steps.version.outputs.version }} (NeoForge)
           version: ${{ steps.version.outputs.version }}
           changelog-file: CHANGELOG.md
           version-type: release
@@ -74,7 +74,7 @@ jobs:
           modrinth-id: ${{ secrets.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: fabric/build/libs/afk-fabric-*.jar
-          name: AFK ${{ steps.version.outputs.version }} (Fabric)
+          name: afkmon-mc ${{ steps.version.outputs.version }} (Fabric)
           version: ${{ steps.version.outputs.version }}
           changelog-file: CHANGELOG.md
           version-type: release

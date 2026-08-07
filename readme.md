@@ -1,6 +1,6 @@
-# afk
+# afkmon-mc
 
-AFK detection with rotating status rings around away players. A port of Garry's Mod's `afkmon` and `afkrings`.
+AFK detection with rotating status rings around away players.
 
 NeoForge and Fabric, Minecraft 1.21.11. Other Minecraft versions live on their own branches.
 
@@ -36,14 +36,8 @@ All network channels are optional, so vanilla clients and servers connect normal
 | `minDistance` | 2.0 | Hide other players' halos closer than this. Your own always draws. |
 | `maxDistance` | 64.0 | Skip halos past this. |
 | `seeThroughWalls` | false | Draw halos through terrain. |
-| `heightOffset` | 0.0 | Blocks to raise the halo. It sits at the feet, where the original put it. |
+| `heightOffset` | 0.0 | Blocks to raise the halo. It sits at the feet. |
 | `awayOverlayEnabled` | true | The on-screen away timer. |
-
-## Differences from the Garry's Mod version
-
-- Dead players get no halo. Minecraft leaves no ragdoll to anchor it to.
-- The lock-on-AFK feature is not ported.
-- The "friend is no longer AFK" chat notice is not ported. Minecraft has no friends list to check.
 
 ## Testing tabbed-out
 
@@ -76,6 +70,3 @@ On 1.20.1 those fields live on `ServerGamePacketListenerImpl` instead, and the w
 
 Everything else (detection, durations, config, codecs, input sampling) is version-agnostic.
 
-## License
-
-AGPL-3.0
