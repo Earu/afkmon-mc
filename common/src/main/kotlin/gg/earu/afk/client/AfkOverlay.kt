@@ -58,18 +58,17 @@ object AfkOverlay {
         val font = mc.font
         val width = font.width(text)
         val pose = graphics.pose()
-        pose.pushPose()
+        pose.pushMatrix()
         pose.translate(
             graphics.guiWidth() / 2f - width * SCALE / 2f,
             graphics.guiHeight() * TOP_FRACTION,
-            0f,
         )
-        pose.scale(SCALE, SCALE, 1f)
+        pose.scale(SCALE, SCALE)
         // Colours from the Lua: dark offset shadow, cool white while away, warm tint once back.
         graphics.drawString(font, text, 1, 1, color(30, 30, 30, frac * 100f), false)
         val main = if (afk) color(244, 254, 255, frac * 200f) else color(236, 253, 154, frac * 200f)
         graphics.drawString(font, text, 0, 0, main, false)
-        pose.popPose()
+        pose.popMatrix()
     }
 
     private fun color(r: Int, g: Int, b: Int, a: Float): Int =

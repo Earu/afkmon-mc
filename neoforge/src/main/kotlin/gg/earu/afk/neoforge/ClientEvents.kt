@@ -29,13 +29,14 @@ object ClientEvents {
     }
 
     @SubscribeEvent
-    fun onRenderLevel(event: RenderLevelStageEvent) {
-        if (event.stage != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return
+    fun onRenderLevel(event: RenderLevelStageEvent.AfterTranslucentBlocks) {
+        // The 1.21.11 event lost its camera and partialTick accessors; pull both from the client.
+        val mc = Minecraft.getInstance()
         AfkRingsRenderer.render(
             event.poseStack,
-            Minecraft.getInstance().renderBuffers().bufferSource(),
-            event.camera,
-            event.partialTick.getGameTimeDeltaPartialTick(false),
+            mc.renderBuffers().bufferSource(),
+            mc.gameRenderer.mainCamera,
+            mc.deltaTracker.getGameTimeDeltaPartialTick(false),
         )
     }
 

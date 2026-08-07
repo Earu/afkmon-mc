@@ -16,7 +16,7 @@ class AfkNeoForge(container: ModContainer, modBus: IEventBus) {
     init {
         val platform = NeoForgePlatform(
             configDir = FMLPaths.CONFIGDIR.get().resolve(Afk.MOD_ID),
-            isClient = FMLEnvironment.dist.isClient,
+            isClient = FMLEnvironment.getDist().isClient,
             modVersion = container.modInfo.version.toString(),
         )
         Afk.init(platform)
@@ -25,7 +25,7 @@ class AfkNeoForge(container: ModContainer, modBus: IEventBus) {
         modBus.register(ModBusEvents)
         ServerEvents.wire()
         NeoForge.EVENT_BUS.register(ServerEvents)
-        if (FMLEnvironment.dist.isClient) {
+        if (FMLEnvironment.getDist().isClient) {
             ClientEvents.wire()
             NeoForge.EVENT_BUS.register(ClientEvents)
         }

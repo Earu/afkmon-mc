@@ -10,7 +10,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
 import net.minecraft.client.renderer.LightTexture
 import net.minecraft.client.renderer.MultiBufferSource
-import net.minecraft.client.renderer.RenderType
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.client.renderer.rendertype.RenderTypes
 import net.minecraft.world.entity.player.Player
 import kotlin.math.PI
 
@@ -89,11 +90,11 @@ object AfkRingsRenderer {
         // Wrapping at an hour keeps float precision usable; 3600s is a whole number of both
         // spins (50) and blink cycles (1200), so nothing jumps at the wrap.
         val worldSeconds = ((level.gameTime % 72_000L).toFloat() + partialTick) / 20f
-        val cameraPos = camera.position
+        val cameraPos = camera.position()
         val minDistanceSq = config.minDistance * config.minDistance
         val maxDistanceSq = config.maxDistance * config.maxDistance
 
-        val ringType = if (config.seeThroughWalls) RenderType.textBackgroundSeeThrough() else RenderType.debugQuads()
+        val ringType = if (config.seeThroughWalls) RenderTypes.textBackgroundSeeThrough() else RenderTypes.debugQuads()
         val displayMode = if (config.seeThroughWalls) Font.DisplayMode.SEE_THROUGH else Font.DisplayMode.NORMAL
         var drewAnything = false
 

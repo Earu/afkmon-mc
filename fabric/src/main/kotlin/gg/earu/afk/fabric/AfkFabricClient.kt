@@ -9,9 +9,10 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents
-import net.minecraft.client.renderer.MultiBufferSource
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents
+import net.minecraft.client.Minecraft
+import net.minecraft.resources.Identifier
 
 class AfkFabricClient : ClientModInitializer {
     override fun onInitializeClient() {
@@ -28,16 +29,20 @@ class AfkFabricClient : ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register { mc -> AfkClient.tick(mc) }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ -> AfkClient.onDisconnect() }
-        HudRenderCallback.EVENT.register { graphics, _ -> AfkOverlay.render(graphics) }
+        HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(Afk.MOD_ID, "overlay")) { graphics, _ ->
+            AfkOverlay.render(graphics)
+        }
 
-        WorldRenderEvents.AFTER_TRANSLUCENT.register { context ->
-            val pose = context.matrixStack() ?: return@register
-            val buffers = context.consumers() as? MultiBufferSource.BufferSource ?: return@register
+        // END_MAIN is the last hook with translucent terrain already drawn; the 1.21.11 render
+        // context lost its camera and tick accessors, so both come from the client instead.
+        WorldRenderEvents.END_MAIN.register { context ->
+            val pose = context.matrices() ?: return@register
+            val mc = Minecraft.getInstance()
             AfkRingsRenderer.render(
                 pose,
-                buffers,
-                context.camera(),
-                context.tickCounter().getGameTimeDeltaPartialTick(false),
+                mc.renderBuffers().bufferSource(),
+                mc.gameRenderer.mainCamera,
+                mc.deltaTracker.getGameTimeDeltaPartialTick(false),
             )
         }
     }

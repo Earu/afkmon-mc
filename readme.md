@@ -2,7 +2,7 @@
 
 AFK detection with rotating status rings around away players. A port of Garry's Mod's `afkmon` and `afkrings`.
 
-NeoForge and Fabric, Minecraft 1.21.1. Other Minecraft versions live on their own branches.
+NeoForge and Fabric, Minecraft 1.21.11. Other Minecraft versions live on their own branches.
 
 - Clients watch their own input and window focus and report when they go away, so being flagged means actually idle, not just standing still.
 - A spinning halo of two rings and a curved label appears around flagged players: `AFK`, `TABBED OUT`, or `TIMING OUT`.

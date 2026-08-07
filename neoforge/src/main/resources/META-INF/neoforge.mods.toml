@@ -17,13 +17,13 @@ config = "afk.mixins.json"
 [[dependencies.afk]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1.0,)"
+versionRange = "[21.11.0,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.afk]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.1]"
+versionRange = "[1.21.11]"
 ordering = "NONE"
 side = "BOTH"

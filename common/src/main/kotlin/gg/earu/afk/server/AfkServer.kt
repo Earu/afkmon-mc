@@ -9,7 +9,7 @@ import gg.earu.afk.mixin.ServerConnectionAccessor
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import net.minecraft.ChatFormatting
-import net.minecraft.Util
+import net.minecraft.util.Util
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
@@ -74,7 +74,7 @@ object AfkServer {
         lastTransitionMs.remove(player.uuid)
         pendingSync.remove(player.uuid)
         // Clear the rings everywhere: the entity can linger on clients for a moment.
-        broadcast(player.server, PlayerAfkState().toPayload(player.uuid))
+        broadcast(player.level().server, PlayerAfkState().toPayload(player.uuid))
     }
 
     fun onReport(player: ServerPlayer, payload: AfkPayloads.ReportPayload) {
@@ -91,7 +91,7 @@ object AfkServer {
         states[player.uuid] = next
 
         if (payload.afk != previous.afk) announce(player, payload.afk, now)
-        broadcast(player.server, next.toPayload(player.uuid))
+        broadcast(player.level().server, next.toPayload(player.uuid))
     }
 
     fun onTick(server: MinecraftServer) {
@@ -134,12 +134,12 @@ object AfkServer {
 
         Afk.LOGGER.info(message)
         if (!config.announceEnabled) return
-        player.server.playerList.broadcastSystemMessage(Component.literal(message), false)
+        player.level().server.playerList.broadcastSystemMessage(Component.literal(message), false)
 
         if (!afk) welcomeBack(player, elapsed + config.afkTimeSeconds)
         if (config.soundsEnabled) {
             val sound = if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING
-            player.serverLevel().playSound(null, player.x, player.y, player.z, sound, SoundSource.PLAYERS, 0.6f, 1f)
+            player.level().playSound(null, player.x, player.y, player.z, sound, SoundSource.PLAYERS, 0.6f, 1f)
         }
     }
 

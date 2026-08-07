@@ -6,7 +6,7 @@ import net.minecraft.core.UUIDUtil
 import net.minecraft.network.codec.ByteBufCodecs
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
-import net.minecraft.resources.ResourceLocation
+import net.minecraft.resources.Identifier
 import java.util.UUID
 
 /**
@@ -19,7 +19,7 @@ object AfkPayloads {
     class ReportPayload(val afk: Boolean, val tabbedOut: Boolean) : CustomPacketPayload {
         companion object {
             val TYPE = CustomPacketPayload.Type<ReportPayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "report"),
+                Identifier.fromNamespaceAndPath(Afk.MOD_ID, "report"),
             )
             val CODEC: StreamCodec<ByteBuf, ReportPayload> = StreamCodec.composite(
                 ByteBufCodecs.BOOL, ReportPayload::afk,
@@ -44,7 +44,7 @@ object AfkPayloads {
     ) : CustomPacketPayload {
         companion object {
             val TYPE = CustomPacketPayload.Type<StatePayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "state"),
+                Identifier.fromNamespaceAndPath(Afk.MOD_ID, "state"),
             )
             val CODEC: StreamCodec<ByteBuf, StatePayload> = StreamCodec.composite(
                 UUIDUtil.STREAM_CODEC, StatePayload::player,
@@ -63,7 +63,7 @@ object AfkPayloads {
     class ConfigPayload(val afkTimeSeconds: Int) : CustomPacketPayload {
         companion object {
             val TYPE = CustomPacketPayload.Type<ConfigPayload>(
-                ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, "config"),
+                Identifier.fromNamespaceAndPath(Afk.MOD_ID, "config"),
             )
             val CODEC: StreamCodec<ByteBuf, ConfigPayload> =
                 ByteBufCodecs.VAR_INT.map(::ConfigPayload) { it.afkTimeSeconds }
