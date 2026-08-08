@@ -74,8 +74,8 @@ object ClientEvents {
         RawInput.record()
     }
 
-    // The event equivalent of the Fabric-only EntityRenderDispatcherMixin. Fires with the
-    // dispatcher's camera-relative translation already on the stack, so the matrix is used as is.
+    // The event equivalent of the Fabric-only PlayerRendererMixin: both capture at the entry of
+    // PlayerRenderer.render, downstream of every dispatcher-level transform (Sable's tilt included).
     @SubscribeEvent
     fun onRenderPlayer(event: RenderPlayerEvent.Pre) {
         PlayerRenderPose.record(event.entity.id, Matrix4f(event.poseStack.last().pose()))

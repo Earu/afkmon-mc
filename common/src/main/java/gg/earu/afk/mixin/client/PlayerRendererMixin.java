@@ -2,10 +2,9 @@ package gg.earu.afk.mixin.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import gg.earu.afk.client.render.PlayerRenderPose;
+import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,27 +16,24 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * halo where the player is actually drawn instead of where the entity claims to stand. The two
  * only disagree under physics mods that render players through an extra contraption transform.
  *
- * Fabric only: Forge does not load this mod's mixins, so ClientEvents captures the same thing
- * from RenderPlayerEvent instead.
+ * Hooked here rather than at the dispatcher because that is where those mods add their transform:
+ * Sable's own dispatcher mixin rotates the pose stack, and capturing at the dispatcher entry
+ * raced it. This method runs downstream of every dispatcher-level transform, whoever added it.
  */
-@Mixin(EntityRenderDispatcher.class)
-public class EntityRenderDispatcherMixin {
+@Mixin(PlayerRenderer.class)
+public class PlayerRendererMixin {
 
-    @Inject(method = "render", at = @At("HEAD"))
+    @Inject(method = "render(Lnet/minecraft/client/player/AbstractClientPlayer;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At("HEAD"))
     private void afk$captureRender(
-        Entity entity,
-        double x,
-        double y,
-        double z,
-        float rotationYaw,
+        AbstractClientPlayer player,
+        float entityYaw,
         float partialTick,
         PoseStack poseStack,
         MultiBufferSource buffer,
         int packedLight,
         CallbackInfo ci
     ) {
-        if (!(entity instanceof Player)) return;
-        // Bake in the camera-relative translation the dispatcher applies right after this point.
-        PlayerRenderPose.record(entity.getId(), new Matrix4f(poseStack.last().pose()).translate((float) x, (float) y, (float) z));
+        // The dispatcher already translated to the player, so the matrix is complete as is.
+        PlayerRenderPose.record(player.getId(), new Matrix4f(poseStack.last().pose()));
     }
 }
