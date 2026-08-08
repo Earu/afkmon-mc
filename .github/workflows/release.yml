@@ -1,6 +1,7 @@
 name: release
 
-# Tag a commit `vX.Y.Z` (or run manually) to build both loaders and publish to Modrinth and CurseForge.
+# Tag a commit `vX.Y.Z+1.20.1` (or run manually) to build both loaders and publish to Modrinth and
+# CurseForge. Tags are shared across branches, so every one of them carries its Minecraft version.
 #
 # Required repository settings:
 #   secrets.MODRINTH_TOKEN: a Modrinth PAT with "create versions" scope
