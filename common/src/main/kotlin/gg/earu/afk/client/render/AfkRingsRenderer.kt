@@ -17,7 +17,8 @@ import kotlin.math.PI
 
 /**
  * Draws the spinning halo from afkrings.lua: two thin rings with a text band filling the gap,
- * lying flat around the player's feet and turning slowly.
+ * lying flat around the player's feet and turning slowly. "Flat" means the drawn player's local
+ * up, taken from [PlayerRenderPose], so a halo on a tilted contraption deck tilts with it.
  *
  * Everything GPU-facing lives here. [RingGeometry] holds the maths and never needs porting.
  */
@@ -80,6 +81,8 @@ object AfkRingsRenderer {
     private val TABBED_OUT = Label("TABBED OUT", argb(150, 60, 60, 60), argb(255, 255, 255, 255))
 
     fun render(pose: PoseStack, buffers: MultiBufferSource.BufferSource, camera: Camera, partialTick: Float) {
+        // Drained every frame, even when nothing draws, so captures never go stale.
+        val renderedPoses = PlayerRenderPose.drain()
         val config = AfkClient.config
         if (!config.ringsEnabled || AfkClient.states.isEmpty()) return
 
@@ -110,7 +113,16 @@ object AfkRingsRenderer {
             if (distanceSq < minDistanceSq && player !== mc.player) continue
 
             pose.pushPose()
-            pose.translate(position.x - cameraPos.x, position.y - cameraPos.y, position.z - cameraPos.z)
+            val rendered = renderedPoses[player.id]
+            if (rendered != null) {
+                // The matrix the player model was actually submitted with this frame. Under
+                // contraption physics mods it carries the deck tilt, so the halo lies on the
+                // deck instead of cutting through it at world-up.
+                pose.last().pose().set(rendered)
+            } else {
+                // Not rendered this frame (first person, culled): world position, world-up.
+                pose.translate(position.x - cameraPos.x, position.y - cameraPos.y, position.z - cameraPos.z)
+            }
             pose.translate(0.0, UP_MOVE.blocks().toDouble() + config.heightOffset, 0.0)
             pose.mulPose(Axis.YP.rotationDegrees(-worldSeconds * SPIN_DEGREES_PER_SECOND))
             // The Lua normalises to a 32-unit-wide player, so sneaking and mounts scale the halo.
