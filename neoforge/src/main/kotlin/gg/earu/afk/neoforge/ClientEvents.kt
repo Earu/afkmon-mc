@@ -5,14 +5,17 @@ import gg.earu.afk.client.AfkClient
 import gg.earu.afk.client.AfkOverlay
 import gg.earu.afk.client.RawInput
 import gg.earu.afk.client.render.AfkRingsRenderer
+import gg.earu.afk.client.render.PlayerRenderPose
 import net.minecraft.client.Minecraft
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent
 import net.minecraftforge.client.event.InputEvent
 import net.minecraftforge.client.event.RenderGuiEvent
 import net.minecraftforge.client.event.RenderLevelStageEvent
+import net.minecraftforge.client.event.RenderPlayerEvent
 import net.minecraftforge.client.event.ScreenEvent
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.eventbus.api.SubscribeEvent
+import org.joml.Matrix4f
 import org.lwjgl.glfw.GLFW
 
 object ClientEvents {
@@ -69,5 +72,12 @@ object ClientEvents {
     @SubscribeEvent
     fun onScreenChar(@Suppress("UNUSED_PARAMETER") event: ScreenEvent.CharacterTyped.Pre) {
         RawInput.record()
+    }
+
+    // The event equivalent of the Fabric-only EntityRenderDispatcherMixin. Fires with the
+    // dispatcher's camera-relative translation already on the stack, so the matrix is used as is.
+    @SubscribeEvent
+    fun onRenderPlayer(event: RenderPlayerEvent.Pre) {
+        PlayerRenderPose.record(event.entity.id, Matrix4f(event.poseStack.last().pose()))
     }
 }
