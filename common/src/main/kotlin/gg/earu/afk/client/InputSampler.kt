@@ -4,14 +4,13 @@ import gg.earu.afk.core.AfkDetector
 import net.minecraft.client.Minecraft
 
 /**
- * Reads the same things afkmon.lua watched, using only public client API so no mixin is needed.
- * The Lua polled a hand-picked subset of keys; the bound movement and action keys are the
- * equivalent here.
+ * Reads the same things afkmon.lua watched. The Lua polled a hand-picked subset of keys; the bound
+ * movement and action keys are the equivalent here, plus [RawInput] for everything the bindings
+ * cannot see.
  */
 object InputSampler {
 
     fun sample(mc: Minecraft): AfkDetector.Sample {
-        val player = mc.player
         val options = mc.options
         // GLFW keeps advancing the virtual cursor while it is grabbed, so this covers both
         // looking around in game and moving the pointer in a menu.
@@ -29,8 +28,8 @@ object InputSampler {
                 options.keyUse.isDown ||
                 options.keyInventory.isDown ||
                 options.keyChat.isDown,
-            yaw = player?.yRot ?: 0f,
-            pitch = player?.xRot ?: 0f,
+            // Key bindings go quiet as soon as a screen opens, so typing only shows up here.
+            inputEvents = RawInput.events,
             windowFocused = mc.isWindowActive,
         )
     }

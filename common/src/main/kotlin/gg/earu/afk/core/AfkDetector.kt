@@ -6,13 +6,20 @@ package gg.earu.afk.core
  */
 class AfkDetector(private val clock: () -> Double) {
 
-    /** One tick's worth of raw input. Deltas between consecutive samples count as activity. */
+    /**
+     * One tick's worth of raw input. Deltas between consecutive samples count as activity.
+     *
+     * Everything here must be something the player did. View rotation deliberately is not sampled:
+     * boats, mounts and server position corrections (being shoved by another player or a mob) all
+     * rewrite yaw and pitch, which used to wake people up without them touching anything. Looking
+     * around already shows up as mouse movement.
+     */
     data class Sample(
         val mouseX: Double,
         val mouseY: Double,
         val anyKeyDown: Boolean,
-        val yaw: Float,
-        val pitch: Float,
+        /** Monotonic count of raw key/char events; see [gg.earu.afk.client.RawInput]. */
+        val inputEvents: Long,
         val windowFocused: Boolean,
     )
 
@@ -84,8 +91,7 @@ class AfkDetector(private val clock: () -> Double) {
     private fun hasActivity(a: Sample, b: Sample): Boolean =
         a.mouseX != b.mouseX ||
             a.mouseY != b.mouseY ||
-            a.yaw != b.yaw ||
-            a.pitch != b.pitch ||
+            a.inputEvents != b.inputEvents ||
             // Edge triggered like the Lua's unrolled key loop: holding a key is not activity.
             a.anyKeyDown != b.anyKeyDown
 

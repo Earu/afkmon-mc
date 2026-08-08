@@ -1,2 +1,4 @@
 - Mod icon.
 - Releases now also publish to CurseForge.
+- Fixed players being marked back when something else moved them (boats, mounts, getting shoved).
+- Fixed typing straight into chat not counting as coming back.
