@@ -14,10 +14,9 @@ class AfkDetectorTest {
         mouseX: Double = 0.0,
         mouseY: Double = 0.0,
         anyKeyDown: Boolean = false,
-        yaw: Float = 0f,
-        pitch: Float = 0f,
+        inputEvents: Long = 0L,
         focused: Boolean = true,
-    ) = AfkDetector.Sample(mouseX, mouseY, anyKeyDown, yaw, pitch, focused)
+    ) = AfkDetector.Sample(mouseX, mouseY, anyKeyDown, inputEvents, focused)
 
     /** Final state after a run of idle ticks, plus whether any tick in it reported a transition. */
     private data class Run(val last: AfkDetector.Output, val sawChange: Boolean) {
@@ -90,13 +89,16 @@ class AfkDetectorTest {
     }
 
     @Test
-    fun `look rotation counts as input`() {
+    fun `typing clears afk`() {
         now = 0.0
         val d = detector(afkSeconds = 30)
         assertTrue(idle(d, 60.0).afk)
 
+        // Straight into chat: no bound key, no mouse movement, only raw key events.
         now += 0.05
-        assertFalse(d.tick(sample(yaw = 4f)).afk)
+        val out = d.tick(sample(inputEvents = 1L))
+        assertFalse(out.afk)
+        assertTrue(out.changed)
     }
 
     @Test
