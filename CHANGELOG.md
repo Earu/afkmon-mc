@@ -1,1 +1,1 @@
-- The halo now follows the player's rendered pose, so it tilts with contraptions from physics mods (Create Aeronautics, Valkyrien Skies) instead of cutting through the deck.
+- Fixed the halo staying world-flat on tilted contraptions: the pose is now captured after Sable (Create Aeronautics) applies its rotation, not before.
