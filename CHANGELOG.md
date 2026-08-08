@@ -1,2 +1,1 @@
-- Fixed players being marked back when something else moved them (boats, mounts, getting shoved).
-- Fixed typing straight into chat not counting as coming back.
+- The halo now follows the player's rendered pose, so it tilts with contraptions from physics mods (Create Aeronautics, Valkyrien Skies) instead of cutting through the deck.
