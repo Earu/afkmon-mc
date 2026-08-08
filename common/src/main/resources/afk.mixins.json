@@ -3,7 +3,7 @@
   "package": "gg.earu.afk.mixin",
   "compatibilityLevel": "JAVA_21",
   "minVersion": "0.8.5",
-  "client": ["client.EntityRenderDispatcherMixin", "client.KeyboardInputMixin"],
+  "client": ["client.KeyboardInputMixin", "client.PlayerRendererMixin"],
   "mixins": ["ServerConnectionAccessor"],
   "injectors": {
     "defaultRequire": 1
