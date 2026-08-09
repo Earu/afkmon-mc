@@ -1,3 +1,4 @@
-- Fixed the halo staying world-flat on tilted contraptions: the pose is now captured after Sable (Create Aeronautics) applies its rotation, not before.
-- The tab list now tags flagged players with `[Timing Out]`, `[AFK]` or `[Tabbed Out]`.
-- Away/back chat announcements are dark grey, and only reach you when the player is within your `maxDistance`.
+- The tab list now tags flagged players with `[Timing Out]`, `[AFK]` or `[Tabbed Out]`, timing out in red.
+- Away/back chat announcements are dark grey and keep whatever colour the server gave the player's name.
+- Those announcements now only reach players within your own `maxDistance`, instead of the whole server.
+- Update both sides together: the state packet carries an extra field, so a 0.1.4 client and a 0.1.5 server will not understand each other.
