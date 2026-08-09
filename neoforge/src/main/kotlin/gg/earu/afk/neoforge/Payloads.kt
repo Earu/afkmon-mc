@@ -42,10 +42,12 @@ object Payloads {
                 buf.writeBoolean(msg.tabbedOut)
                 buf.writeBoolean(msg.timingOut)
                 buf.writeVarLong(msg.sinceEpochMs)
+                buf.writeInt(msg.announceSeconds)
             },
             { buf ->
                 AfkPayloads.StatePayload(
                     buf.readUUID(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readVarLong(),
+                    buf.readInt(),
                 )
             },
             ::handleState,

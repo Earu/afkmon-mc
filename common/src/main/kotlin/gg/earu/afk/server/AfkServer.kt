@@ -95,8 +95,9 @@ object AfkServer {
         )
         states[player.uuid] = next
 
-        if (payload.afk != previous.afk) announce(player, payload.afk, now)
-        broadcast(player.server, next.toPayload(player.uuid))
+        val announceSeconds =
+            if (payload.afk != previous.afk) announce(player, payload.afk, now) else AfkPayloads.NO_ANNOUNCEMENT
+        broadcast(player.server, next.toPayload(player.uuid, announceSeconds))
     }
 
     fun onTick(server: MinecraftServer) {
@@ -124,26 +125,37 @@ object AfkServer {
         }
     }
 
-    private fun announce(player: ServerPlayer, afk: Boolean, now: Long) {
+    /** Returns the duration clients should quote, or [AfkPayloads.NO_ANNOUNCEMENT] when announcements are off. */
+    private fun announce(player: ServerPlayer, afk: Boolean, now: Long): Int {
         val since = lastTransitionMs.put(player.uuid, now) ?: now
         val elapsed = ((now - since) / 1000L).coerceAtLeast(0)
-        val name = player.name.string
-        val message = if (afk) {
-            "$name away (present for ${NiceTime.format(elapsed)})"
+        // The away duration started one threshold before the client noticed.
+        val duration = if (afk) elapsed else elapsed + config.afkTimeSeconds
+        val transition = if (afk) {
+            " away (present for ${NiceTime.format(duration)})"
         } else {
-            // The away duration started one threshold before the client noticed.
-            "$name back (away for ${NiceTime.format(elapsed + config.afkTimeSeconds)})"
+            " back (away for ${NiceTime.format(duration)})"
         }
 
-        Afk.LOGGER.info(message)
-        if (!config.announceEnabled) return
-        player.server.playerList.broadcastSystemMessage(Component.literal(message), false)
+        Afk.LOGGER.info("{}{}", player.name.string, transition)
+        if (!config.announceEnabled) return AfkPayloads.NO_ANNOUNCEMENT
 
-        if (!afk) welcomeBack(player, elapsed + config.afkTimeSeconds)
+        // Modded clients print this themselves once the state packet lands, so that each can apply
+        // its own maxDistance. Vanilla ones have no way to, so they still get it over chat. The
+        // display name keeps whatever colour the server gave the player.
+        val line = Component.empty()
+            .append(player.displayName)
+            .append(Component.literal(transition).withStyle(ChatFormatting.DARK_GRAY))
+        for (listener in player.server.playerList.players) {
+            if (!canSendTo(listener)) listener.sendSystemMessage(line)
+        }
+
+        if (!afk) welcomeBack(player, duration)
         if (config.soundsEnabled) {
             val sound = (if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING).value()
             player.serverLevel().playSound(null, player.x, player.y, player.z, sound, SoundSource.PLAYERS, 0.6f, 1f)
         }
+        return duration.toInt()
     }
 
     /** The coloured greeting from afkmon.lua, sent only to whoever came back. */
@@ -165,8 +177,8 @@ object AfkServer {
         }
     }
 
-    private fun PlayerAfkState.toPayload(uuid: UUID) =
-        AfkPayloads.StatePayload(uuid, afk, tabbedOut, timingOut, sinceEpochMs)
+    private fun PlayerAfkState.toPayload(uuid: UUID, announceSeconds: Int = AfkPayloads.NO_ANNOUNCEMENT) =
+        AfkPayloads.StatePayload(uuid, afk, tabbedOut, timingOut, sinceEpochMs, announceSeconds)
 
     private const val TICKS_PER_CHECK = 20
 

@@ -45,10 +45,12 @@ object FabricChannels {
         buf.writeBoolean(message.tabbedOut)
         buf.writeBoolean(message.timingOut)
         buf.writeVarLong(message.sinceEpochMs)
+        buf.writeInt(message.announceSeconds)
     }
 
     fun readState(buf: FriendlyByteBuf) = AfkPayloads.StatePayload(
         buf.readUUID(), buf.readBoolean(), buf.readBoolean(), buf.readBoolean(), buf.readVarLong(),
+        buf.readInt(),
     )
 }
 
