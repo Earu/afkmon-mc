@@ -7,7 +7,8 @@ NeoForge and Fabric, the popular cube game 1.21.1. Other versions of the popular
 - Clients watch their own input and window focus and report when they go away, so being flagged means actually idle, not just standing still.
 - A spinning halo of two rings and a curved label appears around flagged players: `AFK`, `TABBED OUT`, or `TIMING OUT`.
 - While you are away, an on-screen `Away HH:MM:SS` timer counts up; it lingers a moment after you return so you can see how long you were gone.
-- Chat announcements on both transitions, plus a greeting telling you how long you were gone.
+- Chat announcements on both transitions, plus a greeting telling you how long you were gone. You only hear about players within your own `maxDistance`.
+- The tab list tags flagged players with `[Timing Out]`, `[AFK]` or `[Tabbed Out]`, worst news first. Timing out is red, the rest grey.
 - Sound cue when someone goes away or comes back.
 - `TIMING OUT` shows on players whose connection has stalled, before the server drops them.
 
@@ -34,7 +35,7 @@ All network channels are optional, so vanilla clients and servers connect normal
 | --- | --- | --- |
 | `ringsEnabled` | true | Master toggle for the halo. |
 | `minDistance` | 2.0 | Hide other players' halos closer than this. Your own always draws. |
-| `maxDistance` | 64.0 | Skip halos past this. |
+| `maxDistance` | 64.0 | Skip halos past this, and the chat announcements about those players too. |
 | `seeThroughWalls` | false | Draw halos through terrain. |
 | `heightOffset` | 0.0 | Blocks to raise the halo. It sits at the feet. |
 | `awayOverlayEnabled` | true | The on-screen away timer. |

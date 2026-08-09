@@ -31,9 +31,16 @@ object AfkPayloads {
         override fun type() = TYPE
     }
 
+    /** [StatePayload.announceSeconds] when the change is not worth a chat line. */
+    const val NO_ANNOUNCEMENT = -1
+
     /**
      * S->C: one player's status, broadcast on every change and replayed to joining clients.
      * [sinceEpochMs] is the server's clock so everyone shows the same duration.
+     *
+     * [announceSeconds] is the duration the away/back chat line should quote, or [NO_ANNOUNCEMENT].
+     * The server hands the line to clients instead of broadcasting it so each one can apply its own
+     * [gg.earu.afk.core.ClientConfig.maxDistance]; only vanilla clients get it over chat.
      */
     class StatePayload(
         val player: UUID,
@@ -41,6 +48,7 @@ object AfkPayloads {
         val tabbedOut: Boolean,
         val timingOut: Boolean,
         val sinceEpochMs: Long,
+        val announceSeconds: Int = NO_ANNOUNCEMENT,
     ) : CustomPacketPayload {
         companion object {
             val TYPE = CustomPacketPayload.Type<StatePayload>(
@@ -52,6 +60,7 @@ object AfkPayloads {
                 ByteBufCodecs.BOOL, StatePayload::tabbedOut,
                 ByteBufCodecs.BOOL, StatePayload::timingOut,
                 ByteBufCodecs.VAR_LONG, StatePayload::sinceEpochMs,
+                ByteBufCodecs.INT, StatePayload::announceSeconds,
                 ::StatePayload,
             )
         }

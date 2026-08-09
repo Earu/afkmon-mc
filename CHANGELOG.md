@@ -1,1 +1,3 @@
 - Fixed the halo staying world-flat on tilted contraptions: the pose is now captured after Sable (Create Aeronautics) applies its rotation, not before.
+- The tab list now tags flagged players with `[Timing Out]`, `[AFK]` or `[Tabbed Out]`.
+- Away/back chat announcements are dark grey, and only reach you when the player is within your `maxDistance`.
