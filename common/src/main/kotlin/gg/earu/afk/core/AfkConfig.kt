@@ -24,7 +24,7 @@ data class ClientConfig(
     val ringsEnabled: Boolean = true,
     /** Rings on other players closer than this are hidden so they do not block your view. */
     val minDistance: Double = 2.0,
-    /** Rings past this distance are skipped. */
+    /** Rings past this distance are skipped, and so are chat announcements about those players. */
     val maxDistance: Double = 64.0,
     /** Blocks to raise the halo. The port sits at the player's feet, where the Lua put it. */
     val heightOffset: Double = 0.0,
