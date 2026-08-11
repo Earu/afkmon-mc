@@ -1,4 +1,3 @@
-- The tab list now tags flagged players with `[Timing Out]`, `[AFK]` or `[Tabbed Out]`, timing out in red.
-- Away/back chat announcements are dark grey and keep whatever colour the server gave the player's name.
-- Those announcements now only reach players within your own `maxDistance`, instead of the whole server.
-- Update both sides together: the state packet carries an extra field, so a 0.1.4 client and a 0.1.5 server will not understand each other.
+- The away/back sound cues are now the replay camera sounds from the GMod afkmon, replacing the note block placeholders.
+- Vanilla clients keep the note block sounds, they do not carry the mod's assets.
+- Update both sides together: a 0.1.5 client on a 0.1.6 server hears silence instead of the cue.
