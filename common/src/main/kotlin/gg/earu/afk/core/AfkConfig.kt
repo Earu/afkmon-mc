@@ -32,6 +32,8 @@ data class ClientConfig(
     val seeThroughWalls: Boolean = false,
     /** The on-screen "Away HH:MM:SS" timer while you are away, like cl_afkui. */
     val awayOverlayEnabled: Boolean = true,
+    /** The away/back cues the server pushes at us; off mutes them on this client only. */
+    val soundsEnabled: Boolean = true,
 )
 
 object AfkConfig {

@@ -5,7 +5,8 @@
   "minVersion": "0.8.5",
   "client": [
     "client.KeyboardInputMixin",
-    "client.PlayerRendererMixin"
+    "client.PlayerRendererMixin",
+    "client.SoundEngineMixin"
   ],
   "mixins": [
     "ServerConnectionAccessor"
