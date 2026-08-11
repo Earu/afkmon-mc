@@ -39,6 +39,7 @@ All network channels are optional, so vanilla clients and servers connect normal
 | `seeThroughWalls` | false | Draw halos through terrain. |
 | `heightOffset` | 0.0 | Blocks to raise the halo. It sits at the feet. |
 | `awayOverlayEnabled` | true | The on-screen away timer. |
+| `soundsEnabled` | true | The away/back cues. Off mutes them on your client only. |
 
 ## Testing tabbed-out
 
