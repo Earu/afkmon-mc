@@ -1,3 +1,1 @@
-- The away/back sound cues are now the replay camera sounds from the GMod afkmon, replacing the note block placeholders.
-- Vanilla clients keep the note block sounds, they do not carry the mod's assets.
-- Update both sides together: a 0.1.5 client on a 0.1.6 server hears silence instead of the cue.
+- New `soundsEnabled` option in `client.json`: off mutes the away/back cues on your own client, other players still hear them.
