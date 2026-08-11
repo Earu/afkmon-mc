@@ -1,0 +1,8 @@
+{
+  "away": {
+    "sounds": ["afk:away"]
+  },
+  "back": {
+    "sounds": ["afk:back"]
+  }
+}
