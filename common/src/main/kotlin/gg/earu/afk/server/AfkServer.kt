@@ -10,12 +10,16 @@ import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import net.minecraft.ChatFormatting
 import net.minecraft.Util
+import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.network.chat.TextColor
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.game.ClientboundSoundPacket
+import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.level.ServerPlayer
+import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import java.util.UUID
@@ -148,11 +152,31 @@ object AfkServer {
         }
 
         if (!afk) welcomeBack(player, duration)
-        if (config.soundsEnabled) {
-            val sound = if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING
-            player.serverLevel().playSound(null, player.x, player.y, player.z, sound, SoundSource.PLAYERS, 0.6f, 1f)
-        }
+        if (config.soundsEnabled) playCue(player, afk)
         return duration.toInt()
+    }
+
+    /**
+     * The EmitSound cues from afkmon.lua, played at the player for everyone in earshot. Vanilla
+     * clients do not carry the mod's assets, so they keep the old note-block stand-ins instead.
+     */
+    private fun playCue(player: ServerPlayer, afk: Boolean) {
+        val custom = if (afk) AWAY_CUE else BACK_CUE
+        val fallback = if (afk) SoundEvents.NOTE_BLOCK_CHIME else SoundEvents.NOTE_BLOCK_PLING
+        val seed = player.serverLevel().random.nextLong()
+        for (listener in player.server.playerList.players) {
+            if (listener.serverLevel() !== player.serverLevel()) continue
+            if (listener.distanceToSqr(player) > CUE_RANGE * CUE_RANGE) continue
+            val modded = canSendTo(listener, AfkPayloads.StatePayload.TYPE)
+            listener.connection.send(
+                ClientboundSoundPacket(
+                    if (modded) custom else fallback,
+                    SoundSource.PLAYERS,
+                    player.x, player.y, player.z,
+                    if (modded) 1f else 0.6f, 1f, seed,
+                ),
+            )
+        }
     }
 
     /** The coloured greeting from afkmon.lua, sent only to whoever came back. */
@@ -176,6 +200,16 @@ object AfkServer {
 
     private fun PlayerAfkState.toPayload(uuid: UUID, announceSeconds: Int = AfkPayloads.NO_ANNOUNCEMENT) =
         AfkPayloads.StatePayload(uuid, afk, tabbedOut, timingOut, sinceEpochMs, announceSeconds)
+
+    // Direct holders resolve on modded clients through sounds.json, no registry entry needed.
+    private val AWAY_CUE = cue("away")
+    private val BACK_CUE = cue("back")
+
+    private fun cue(name: String): Holder<SoundEvent> =
+        Holder.direct(SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(Afk.MOD_ID, name)))
+
+    /** Vanilla's audible radius for a volume-1 sound. */
+    private const val CUE_RANGE = 16.0
 
     private const val TICKS_PER_CHECK = 20
 
