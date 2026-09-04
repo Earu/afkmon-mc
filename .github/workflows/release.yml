@@ -2,10 +2,12 @@ name: release
 
 # Tag a commit `vX.Y.Z+1.21.1` (or run manually) to build both loaders and publish to Modrinth and
 # CurseForge. Tags are shared across branches, so every one of them carries its Minecraft version.
+# Modrinth goes through Minotaur (configured in the loader build files), CurseForge through mc-publish.
 #
 # Required repository settings:
 #   secrets.MODRINTH_TOKEN: a Modrinth PAT with "create versions" scope
 #   secrets.MODRINTH_ID: the Modrinth project id (or slug)
+#   secrets.CURSEFORGE_TOKEN, secrets.CURSEFORGE_ID: the CurseForge upload token and project id
 
 on:
   push:
@@ -54,11 +56,16 @@ jobs:
             neoforge/build/libs/afk-neoforge-*.jar
             fabric/build/libs/afk-fabric-*.jar
 
-      - name: Publish NeoForge to Modrinth and CurseForge
+      - name: Publish both loaders to Modrinth
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_ID: ${{ secrets.MODRINTH_ID }}
+        run: ./gradlew modrinth -Pmod_version=${{ steps.version.outputs.version }}
+
+      - name: Publish NeoForge to CurseForge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: ${{ secrets.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           curseforge-id: ${{ secrets.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: neoforge/build/libs/afk-neoforge-*.jar
@@ -71,11 +78,9 @@ jobs:
           dependencies: |
             kotlin-for-forge(required)
 
-      - name: Publish Fabric to Modrinth and CurseForge
+      - name: Publish Fabric to CurseForge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: ${{ secrets.MODRINTH_ID }}
-          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           curseforge-id: ${{ secrets.CURSEFORGE_ID }}
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: fabric/build/libs/afk-fabric-*.jar
