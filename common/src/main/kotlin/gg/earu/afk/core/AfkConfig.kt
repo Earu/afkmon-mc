@@ -26,8 +26,6 @@ data class ClientConfig(
     val minDistance: Double = 2.0,
     /** Rings past this distance are skipped, and so are chat announcements about those players. */
     val maxDistance: Double = 64.0,
-    /** Blocks to raise the halo. The port sits at the player's feet, where the Lua put it. */
-    val heightOffset: Double = 0.0,
     /** GMod forced the depth buffer off so rings showed through walls; off here by default. */
     val seeThroughWalls: Boolean = false,
     /** The on-screen "Away HH:MM:SS" timer while you are away, like cl_afkui. */
