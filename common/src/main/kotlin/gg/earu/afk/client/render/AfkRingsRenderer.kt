@@ -42,6 +42,13 @@ object AfkRingsRenderer {
     /** The Lua lifts the mesh by 5 + 3 units before applying the mesh's own offset. */
     private const val UP_MOVE = 8f
 
+    /**
+     * Blocks to lift the halo on a seated player (mount, boat, chair from a sitting mod). Their
+     * origin sits under the seat, so a feet-height halo hides inside it; this is the hip pivot of
+     * the player model, 12 pixels at the 0.9375 model scale, so the halo circles the waist.
+     */
+    private const val SEATED_LIFT = 0.703125
+
     /** The RT texture tiled five times around the ring, so the label repeats five times. */
     private const val REPEATS = 5
 
@@ -123,7 +130,8 @@ object AfkRingsRenderer {
                 // Not rendered this frame (first person, culled): world position, world-up.
                 pose.translate(position.x - cameraPos.x, position.y - cameraPos.y, position.z - cameraPos.z)
             }
-            pose.translate(0.0, UP_MOVE.blocks().toDouble() + config.heightOffset, 0.0)
+            val lift = UP_MOVE.blocks().toDouble() + (if (player.isPassenger) SEATED_LIFT else 0.0)
+            pose.translate(0.0, lift, 0.0)
             pose.mulPose(Axis.YP.rotationDegrees(-worldSeconds * SPIN_DEGREES_PER_SECOND))
             // The Lua normalises to a 32-unit-wide player, so sneaking and mounts scale the halo.
             val scale = player.bbWidth / 0.6f
