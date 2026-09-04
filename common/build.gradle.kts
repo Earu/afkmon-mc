@@ -13,6 +13,8 @@ repositories {
 neoForge {
     // Vanilla-only mode: Mojang-mapped Minecraft on the compile classpath, no loader.
     neoFormVersion = libs.versions.neoform.get()
+    // The API's PlayerState implements a Minecraft interface, so the unit tests need the classes too.
+    addModdingDependenciesTo(sourceSets.test.get())
 }
 
 kotlin {
@@ -30,7 +32,8 @@ dependencies {
     testImplementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.16")
+    // Pinned to the slf4j version Minecraft 1.21.1 strictly requires.
+    testRuntimeOnly("org.slf4j:slf4j-simple:2.0.9")
 }
 
 tasks.test {

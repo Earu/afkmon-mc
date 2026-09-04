@@ -56,6 +56,21 @@ JDK 21.
 
 Jars land in `neoforge/build/libs` and `fabric/build/libs`. `common` holds all the logic and is compiled into both loader jars; the loader modules are thin wiring.
 
+## API
+
+Add the jar to your compile classpath and use `gg.earu.afk.api.Afkmon`. Same shape on every loader. Works on both sides, pass whichever player entity you have.
+
+```kotlin
+Afkmon.getPlayerState(player)      // PlayerState: TIMING_OUT, AFK, TABBED_OUT or ACTIVE
+Afkmon.getPlayerStateTime(player)  // seconds in that state
+Afkmon.isAfk(player)               // also isTabbedOut, isTimingOut, isActive
+Afkmon.addListener { change -> change.playerId; change.previous; change.current; change.clientSide }
+```
+
+When several flags are set the state is the highest of TIMING OUT > AFK > TABBED OUT > ACTIVE. The `is*` getters read the raw flags, so `isAfk` stays true while an away player is timing out. `PlayerState` is a `StringRepresentable` and `displayName()` gives the localised label.
+
+Changes carry a UUID, since the client hears about players it has not loaded. They fire on the side that saw the change, on its main thread; on an integrated server both sides fire once each, `clientSide` tells them apart. The same change also goes through the loader's own pipeline: `AfkEvents.STATE_CHANGE` on Fabric, `AfkStateChangedEvent` on the NeoForge game bus.
+
 ## Porting to a new version of the popular cube game
 
 Two places need attention, in this order:

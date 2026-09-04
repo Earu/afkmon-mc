@@ -1,6 +1,8 @@
 package gg.earu.afk.neoforge
 
 import gg.earu.afk.Afk
+import gg.earu.afk.api.AfkStateChangedEvent
+import gg.earu.afk.api.Afkmon
 import gg.earu.afk.server.AfkServer
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.bus.api.SubscribeEvent
@@ -21,6 +23,7 @@ class AfkNeoForge(container: ModContainer, modBus: IEventBus) {
         )
         Afk.init(platform)
         AfkServer.init(platform)
+        Afkmon.addListener { change -> NeoForge.EVENT_BUS.post(AfkStateChangedEvent(change)) }
 
         modBus.register(ModBusEvents)
         ServerEvents.wire()
