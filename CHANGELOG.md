@@ -1,4 +1,3 @@
-- New `soundsEnabled` option in `client.json`: off mutes the away/back cues on your own client, other players still hear them.
 - Halos on seated players (mounts, boats, chairs) now circle the waist instead of hiding under the seat.
 - Removed the `heightOffset` option from `client.json`. Existing files still load, the key is ignored.
 - New `gg.earu.afk.api.Afkmon` API for other mods: player state, time in state, flag getters and state change listeners.
