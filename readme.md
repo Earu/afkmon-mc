@@ -37,7 +37,6 @@ All network channels are optional, so vanilla clients and servers connect normal
 | `minDistance` | 2.0 | Hide other players' halos closer than this. Your own always draws. |
 | `maxDistance` | 64.0 | Skip halos past this, and the chat announcements about those players too. |
 | `seeThroughWalls` | false | Draw halos through terrain. |
-| `heightOffset` | 0.0 | Blocks to raise the halo. It sits at the feet. |
 | `awayOverlayEnabled` | true | The on-screen away timer. |
 | `soundsEnabled` | true | The away/back cues. Off mutes them on your client only. |
 
