@@ -2,6 +2,7 @@ plugins {
     id("net.neoforged.moddev.legacyforge")
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.minotaur)
 }
 
 repositories {
@@ -55,6 +56,24 @@ tasks.withType<JavaCompile>().configureEach {
 
 base {
     archivesName = "afk-forge"
+}
+
+// Modrinth publishing through Modrinth's own plugin; CurseForge stays on mc-publish in the workflow.
+// `./gradlew modrinth` uploads, MODRINTH_DEBUG=1 prints the request instead.
+modrinth {
+    token = providers.environmentVariable("MODRINTH_TOKEN").orElse("")
+    projectId = providers.environmentVariable("MODRINTH_ID").orElse("")
+    debugMode = providers.environmentVariable("MODRINTH_DEBUG").isPresent
+    versionNumber = project.version.toString()
+    versionName = "afkmon-mc ${project.version} (Forge)"
+    versionType = "release"
+    changelog = provider { rootProject.file("CHANGELOG.md").readText() }
+    gameVersions.add(libs.versions.minecraft.get())
+    loaders.add("forge")
+    uploadFile.set(tasks.jar)
+    dependencies {
+        required.project("kotlin-for-forge")
+    }
 }
 
 tasks.processResources {
