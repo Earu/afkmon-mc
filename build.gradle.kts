@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.loom) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.minotaur) apply false
 }
 
 subprojects {
