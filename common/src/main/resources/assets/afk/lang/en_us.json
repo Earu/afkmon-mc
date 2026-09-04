@@ -1,0 +1,6 @@
+{
+  "afk.state.timing_out": "TIMING OUT",
+  "afk.state.afk": "AFK",
+  "afk.state.tabbed_out": "TABBED OUT",
+  "afk.state.active": "ACTIVE"
+}

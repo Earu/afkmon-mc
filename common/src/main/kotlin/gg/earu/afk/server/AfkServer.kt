@@ -5,6 +5,7 @@ import gg.earu.afk.core.AfkConfig
 import gg.earu.afk.core.NiceTime
 import gg.earu.afk.core.PlayerAfkState
 import gg.earu.afk.core.ServerConfig
+import gg.earu.afk.api.Afkmon
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import net.minecraft.ChatFormatting
@@ -58,6 +59,7 @@ object AfkServer {
 
     fun onPlayerJoin(player: ServerPlayer) {
         lastTransitionMs[player.uuid] = System.currentTimeMillis()
+        Afkmon.serverTracker.update(player.uuid, PlayerAfkState())
         // Channel negotiation may still be in flight at this point, so the sync is retried from
         // the tick loop until the channel shows up (or the deadline passes for vanilla clients).
         pendingSync[player.uuid] = System.currentTimeMillis() + SYNC_DEADLINE_MS
@@ -80,6 +82,7 @@ object AfkServer {
 
     fun onPlayerLeave(player: ServerPlayer) {
         states.remove(player.uuid)
+        Afkmon.serverTracker.remove(player.uuid)
         lastTransitionMs.remove(player.uuid)
         pendingSync.remove(player.uuid)
         // Clear the rings everywhere: the entity can linger on clients for a moment.
@@ -98,6 +101,7 @@ object AfkServer {
             sinceEpochMs = if (payload.afk) now - config.afkTimeSeconds * 1000L else now,
         )
         states[player.uuid] = next
+        Afkmon.serverTracker.update(player.uuid, next)
 
         val announceSeconds =
             if (payload.afk != previous.afk) announce(player, payload.afk, now) else AfkPayloads.NO_ANNOUNCEMENT
@@ -125,6 +129,7 @@ object AfkServer {
                 sinceEpochMs = if (previous.flagged) previous.sinceEpochMs else System.currentTimeMillis(),
             )
             states[player.uuid] = next
+            Afkmon.serverTracker.update(player.uuid, next)
             broadcast(server, next.toPayload(player.uuid))
         }
     }

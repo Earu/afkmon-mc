@@ -1,6 +1,8 @@
 package gg.earu.afk.fabric
 
 import gg.earu.afk.Afk
+import gg.earu.afk.api.AfkEvents
+import gg.earu.afk.api.Afkmon
 import gg.earu.afk.mixin.ServerConnectionAccessor
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
@@ -66,6 +68,7 @@ class AfkFabric : ModInitializer {
         val platform = FabricPlatform()
         Afk.init(platform)
         AfkServer.init(platform)
+        Afkmon.addListener { change -> AfkEvents.STATE_CHANGE.invoker().onStateChange(change) }
 
         AfkServer.sendToPlayer = FabricChannels::sendToPlayer
         AfkServer.canSendTo = { player -> ServerPlayNetworking.canSend(player, FabricChannels.STATE) }

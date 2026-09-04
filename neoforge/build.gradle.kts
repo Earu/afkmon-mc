@@ -27,6 +27,8 @@ legacyForge {
             findProperty("mcUsername")?.let { programArguments.addAll("--username", it.toString()) }
             findProperty("quickJoin")?.let { programArguments.addAll("--quickPlayMultiplayer", it.toString()) }
             findProperty("quickPlay")?.let { programArguments.addAll("--quickPlaySingleplayer", it.toString()) }
+            // Separate dir so a dev client and dev server can run at once.
+            gameDirectory = project.file("run-client")
         }
         create("server") {
             server()

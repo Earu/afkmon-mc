@@ -13,6 +13,8 @@ repositories {
 legacyForge {
     // Vanilla-only mode for 1.20.1: Mojang-mapped Minecraft via MCP data, no loader.
     mcpVersion = libs.versions.mcp.get()
+    // The API's PlayerState implements a Minecraft interface, so the unit tests need the classes too.
+    addModdingDependenciesTo(sourceSets.test.get())
 }
 
 kotlin {

@@ -4,6 +4,7 @@ import gg.earu.afk.core.AfkDetector
 import gg.earu.afk.core.ClientConfig
 import gg.earu.afk.core.NiceTime
 import gg.earu.afk.core.PlayerAfkState
+import gg.earu.afk.api.Afkmon
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
 import gg.earu.afk.core.AfkConfig
@@ -36,6 +37,7 @@ object AfkClient {
     fun onState(payload: AfkPayloads.StatePayload) {
         val state = PlayerAfkState(payload.afk, payload.tabbedOut, payload.timingOut, payload.sinceEpochMs)
         if (state.flagged) states[payload.player] = state else states.remove(payload.player)
+        Afkmon.clientTracker.update(payload.player, state)
 
         if (payload.announceSeconds >= 0) announce(payload)
 
@@ -79,6 +81,7 @@ object AfkClient {
 
     fun onDisconnect() {
         states.clear()
+        Afkmon.clientTracker.clear()
         detector.reset()
         AfkTabList.clear()
     }
