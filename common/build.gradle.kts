@@ -13,6 +13,8 @@ repositories {
 neoForge {
     // Vanilla-only mode: Mojang-mapped Minecraft on the compile classpath, no loader.
     neoFormVersion = libs.versions.neoform.get()
+    // The API's PlayerState implements a Minecraft interface, so the unit tests need the classes too.
+    addModdingDependenciesTo(sourceSets.test.get())
 }
 
 kotlin {
