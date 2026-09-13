@@ -1,18 +1,15 @@
 package gg.earu.afk.client
 
-import gg.earu.afk.core.PlayerAfkState
-import net.minecraft.ChatFormatting
+import gg.earu.afk.api.Afkmon
 import net.minecraft.client.multiplayer.ClientPacketListener
 import net.minecraft.client.multiplayer.PlayerInfo
 import net.minecraft.network.chat.Component
-import net.minecraft.network.chat.Style
-import net.minecraft.network.chat.TextColor
 import net.minecraft.world.scores.PlayerTeam
 import java.util.UUID
 
 /**
- * Tags flagged players in the tab list with their status: `[Timing Out]`, `[AFK]` or `[Tabbed Out]`.
- * One tag at a time, worst news first, unlike the halo which alternates between the two it can show.
+ * Tags flagged players in the tab list with their [gg.earu.afk.api.PlayerState.tag]. One tag at a
+ * time, worst news first, unlike the halo which alternates between the two it can show.
  *
  * The entry's display name is rewritten rather than read through a render mixin, because the
  * 1.20.1 Forge build cannot ship one (no refmap) and this keeps every branch on one path. Whatever
@@ -20,13 +17,6 @@ import java.util.UUID
  * names keep them; a server changing the name while a player is away is picked up on the next tick.
  */
 object AfkTabList {
-
-    /** The red the halo paints TIMING OUT with, so the tag and the ring read as one status. */
-    private val TIMING_OUT: Component = Component.literal(" [Timing Out]")
-        .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(0xFF5731)))
-
-    private val AFK: Component = Component.literal(" [AFK]").withStyle(ChatFormatting.GRAY)
-    private val TABBED_OUT: Component = Component.literal(" [Tabbed Out]").withStyle(ChatFormatting.GRAY)
 
     private class Decoration(val serverName: Component?, val applied: Component)
 
@@ -50,29 +40,29 @@ object AfkTabList {
 
     /**
      * The name the server gave the player, with our tag taken back off if one is currently on.
-     * Callers that want to print the name elsewhere need this rather than the raw entry.
+     * Null when the server set none. Callers that want to print the name elsewhere need this
+     * rather than the raw entry.
      */
-    fun undecorated(info: PlayerInfo): Component? {
+    internal fun undecorated(info: PlayerInfo): Component? {
         val previous = decorations[info.profile.id()]
         val current: Component? = info.tabListDisplayName
         // A name we did not write means the server has set its own since; that one is the truth.
         return if (previous != null && current == previous.applied) previous.serverName else current
     }
 
-    private fun tagFor(state: PlayerAfkState?): Component? = when {
-        state == null -> null
-        state.timingOut -> TIMING_OUT
-        state.afk -> AFK
-        state.tabbedOut -> TABBED_OUT
-        else -> null
-    }
+    /**
+     * What the tab list would show without our tag: the server's name, or the vanilla team
+     * formatting when it set none. Other mods reach it through [gg.earu.afk.api.AfkmonClient].
+     */
+    internal fun displayName(info: PlayerInfo): Component =
+        undecorated(info) ?: PlayerTeam.formatNameForTeam(info.team, Component.literal(info.profile.name()))
 
     private fun apply(uuid: UUID, info: PlayerInfo) {
         val previous = decorations[uuid]
         val current: Component? = info.tabListDisplayName
         val serverName = undecorated(info)
 
-        val tag = tagFor(AfkClient.states[uuid])
+        val tag = Afkmon.client().stateOf(uuid).tag()
         if (tag == null) {
             decorations.remove(uuid)
             if (previous != null && current == previous.applied) info.tabListDisplayName = previous.serverName
@@ -80,8 +70,7 @@ object AfkTabList {
         }
 
         // Vanilla only team-formats when the server left the display name unset, so match that.
-        val base = serverName ?: PlayerTeam.formatNameForTeam(info.team, Component.literal(info.profile.name()))
-        val applied = Component.empty().append(base).append(tag)
+        val applied = Component.empty().append(displayName(info)).append(" ").append(tag)
         if (current != applied) info.tabListDisplayName = applied
         decorations[uuid] = Decoration(serverName, applied)
     }

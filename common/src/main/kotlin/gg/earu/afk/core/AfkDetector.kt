@@ -59,6 +59,12 @@ class AfkDetector(private val clock: () -> Double) {
         suppressUntil = clock() + seconds
     }
 
+    /** Seconds since the last input that counted, 0 during the grace period after a join. */
+    fun secondsSinceInput(): Double = (clock() - lastInput).coerceAtLeast(0.0)
+
+    /** Seconds the window has been unfocused, 0 while focused. */
+    fun secondsUnfocused(): Double = unfocusedSince?.let { (clock() - it).coerceAtLeast(0.0) } ?: 0.0
+
     fun tick(sample: Sample): Output {
         val now = clock()
         val suppressed = now < suppressUntil

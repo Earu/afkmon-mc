@@ -4,7 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack
 import com.mojang.blaze3d.vertex.VertexConsumer
 import com.mojang.math.Axis
 import gg.earu.afk.client.AfkClient
-import gg.earu.afk.core.PlayerAfkState
+import gg.earu.afk.api.AfkFlags
 import net.minecraft.client.Camera
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.Font
@@ -152,7 +152,7 @@ object AfkRingsRenderer {
         }
     }
 
-    private fun labelFor(state: PlayerAfkState, worldSeconds: Float): Label? = when {
+    private fun labelFor(state: AfkFlags, worldSeconds: Float): Label? = when {
         state.timingOut -> TIMING_OUT
         // Both at once alternates, exactly like the Lua's now % 3 > 2 check.
         state.afk && state.tabbedOut -> if (worldSeconds % 3f > 2f) AFK else TABBED_OUT
