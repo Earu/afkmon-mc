@@ -1,6 +1,3 @@
-- Halos on seated players (mounts, boats, chairs) now circle the waist instead of hiding under the seat.
-- Removed the `heightOffset` option from `client.json`. Existing files still load, the key is ignored.
-- New `gg.earu.afk.api.Afkmon` API for other mods: player state, time in state, flag getters and state change listeners.
 - API: `Afkmon.server()`, `client()` and `side()` return an `AfkStateView` keyed by UUID, with per flag clocks, `flaggedPlayers()`, `afkTimeSeconds()` and `hasMod()`. The entity getters remain.
 - API: `addFlagsListener` hears every raw flag flip, `StateChange` carries `previousSeconds`, and a flagged player logging out is reported as a change to ACTIVE. Fabric and NeoForge get matching events.
 - API: `PlayerState.tag()` gives the tab list tag. `AfkmonClient` gives tab list names with the tag taken off and the local idle readouts.
