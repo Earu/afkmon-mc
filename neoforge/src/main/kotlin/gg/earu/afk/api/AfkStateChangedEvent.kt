@@ -9,4 +9,13 @@ class AfkStateChangedEvent(val change: StateChange) : Event() {
     val previous: PlayerState get() = change.previous
     val current: PlayerState get() = change.current
     val isClientSide: Boolean get() = change.clientSide
+    val previousSeconds: Long get() = change.previousSeconds
+}
+
+/** Posted on the game bus for every change [Afkmon.addFlagsListener] would report. Not cancellable. */
+class AfkFlagsChangedEvent(val change: FlagsChange) : Event() {
+    val playerId: UUID get() = change.playerId
+    val previous: AfkFlags get() = change.previous
+    val current: AfkFlags get() = change.current
+    val isClientSide: Boolean get() = change.clientSide
 }

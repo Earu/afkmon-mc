@@ -58,18 +58,28 @@ Jars land in `neoforge/build/libs` (as `afk-forge-*`) and `fabric/build/libs`. `
 
 ## API
 
-Add the jar to your compile classpath and use `gg.earu.afk.api.Afkmon`. Same shape on every loader. Works on both sides, pass whichever player entity you have.
+Add the jar to your compile classpath and use `gg.earu.afk.api.Afkmon`. Same shape on every loader. Each side keeps its own states: `server()` on the server, `client()` on the client, or `side(isClientSide)`. All keyed by UUID, so the client can ask about players it has not loaded.
 
 ```kotlin
-Afkmon.getPlayerState(player)      // PlayerState: TIMING_OUT, AFK, TABBED_OUT or ACTIVE
-Afkmon.getPlayerStateTime(player)  // seconds in that state
-Afkmon.isAfk(player)               // also isTabbedOut, isTimingOut, isActive
-Afkmon.addListener { change -> change.playerId; change.previous; change.current; change.clientSide }
+val view = Afkmon.client()          // or Afkmon.server(), Afkmon.side(level.isClientSide)
+view.stateOf(uuid)                  // PlayerState: TIMING_OUT, AFK, TABBED_OUT or ACTIVE
+view.secondsInStateOf(uuid)         // seconds in that state, 0 if unknown
+view.isAfk(uuid)                    // also isTabbedOut, isTimingOut, isActive
+view.flagsOf(uuid)                  // AfkFlags: all three at once, plus sinceEpochMs
+view.secondsAfk(uuid)               // per flag clocks, also secondsTabbedOut, secondsTimingOut
+view.flaggedPlayers()               // Map<UUID, PlayerState> of everyone not ACTIVE
+view.afkTimeSeconds()               // the threshold, 0 on a client before the server sent it
+view.hasMod(uuid)                   // server only, vanilla players are never AFK or TABBED_OUT
+Afkmon.getPlayerState(player)       // entity conveniences pick the side from the entity's level
+Afkmon.addListener { change -> change.playerId; change.previous; change.current; change.previousSeconds }
+Afkmon.addFlagsListener { change -> change.previous.afk; change.current.tabbedOut }
 ```
 
-When several flags are set the state is the highest of TIMING OUT > AFK > TABBED OUT > ACTIVE. The `is*` getters read the raw flags, so `isAfk` stays true while an away player is timing out. `PlayerState` is a `StringRepresentable` and `displayName()` gives the localised label.
+When several flags are set the state is the highest of TIMING OUT > AFK > TABBED OUT > ACTIVE. The `is*` getters read the raw flags, so `isAfk` stays true while an away player is timing out. `PlayerState` is a `StringRepresentable`, `displayName()` gives the localised label and `tag()` the coloured `[AFK]` the tab list appends (null for ACTIVE).
 
-Changes carry a UUID, since the client hears about players it has not loaded. They fire on the side that saw the change, on its main thread; on an integrated server both sides fire once each, `clientSide` tells them apart. The same change also goes through the loader's own pipeline: `AfkEvents.STATE_CHANGE` on Fabric, `AfkStateChangedEvent` on the NeoForge game bus.
+State listeners fire when the reduced state changes, flags listeners on every flag flip, so tabbing out while away only reaches the second. Both fire on the side that saw the change, on its main thread; on an integrated server both sides fire once each, `clientSide` tells them apart. A flagged player logging out is reported as a change to ACTIVE. The same changes go through the loader's own pipeline: `AfkEvents.STATE_CHANGE` and `AfkEvents.FLAGS_CHANGE` on Fabric, `AfkStateChangedEvent` and `AfkFlagsChangedEvent` on the NeoForge game bus.
+
+`AfkmonClient` is the client-only half, never load it on a dedicated server. The tab list tag is applied by rewriting the entry's display name, so a UI reading `PlayerInfo.getTabListDisplayName` gets the tag too: `undecoratedName(info)` or `undecoratedName(uuid)` gives the name without it, as the server set it or with vanilla team formatting (null only when the player has no entry). `secondsSinceInput()` and `secondsUnfocused()` read the local detector, the local player goes away once either reaches the threshold.
 
 ## Porting to a new version of the popular cube game
 

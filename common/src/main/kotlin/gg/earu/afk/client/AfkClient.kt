@@ -3,7 +3,7 @@ package gg.earu.afk.client
 import gg.earu.afk.core.AfkDetector
 import gg.earu.afk.core.ClientConfig
 import gg.earu.afk.core.NiceTime
-import gg.earu.afk.core.PlayerAfkState
+import gg.earu.afk.api.AfkFlags
 import gg.earu.afk.api.Afkmon
 import gg.earu.afk.net.AfkPayloads
 import gg.earu.afk.platform.Platform
@@ -26,16 +26,19 @@ object AfkClient {
     var config: ClientConfig = ClientConfig()
         private set
 
-    val states = ConcurrentHashMap<UUID, PlayerAfkState>()
+    val states = ConcurrentHashMap<UUID, AfkFlags>()
 
-    private val detector = AfkDetector { System.nanoTime() / 1_000_000_000.0 }
+    internal val detector = AfkDetector { System.nanoTime() / 1_000_000_000.0 }
 
     fun init(platform: Platform) {
         config = AfkConfig.loadClient(platform.configDir)
     }
 
     fun onState(payload: AfkPayloads.StatePayload) {
-        val state = PlayerAfkState(payload.afk, payload.tabbedOut, payload.timingOut, payload.sinceEpochMs)
+        // A payload queued in the same tick as the disconnect runs after onDisconnect cleared
+        // everything; letting it through would leave a stale entry for a session that is gone.
+        if (Minecraft.getInstance().player == null) return
+        val state = AfkFlags(payload.afk, payload.tabbedOut, payload.timingOut, payload.sinceEpochMs)
         if (state.flagged) states[payload.player] = state else states.remove(payload.player)
         Afkmon.clientTracker.update(payload.player, state)
 
@@ -77,11 +80,13 @@ object AfkClient {
 
     fun onConfig(payload: AfkPayloads.ConfigPayload) {
         detector.afkTimeSeconds = payload.afkTimeSeconds
+        Afkmon.clientTracker.setAfkTimeSeconds(payload.afkTimeSeconds)
     }
 
     fun onDisconnect() {
         states.clear()
         Afkmon.clientTracker.clear()
+        Afkmon.clientTracker.setAfkTimeSeconds(0)
         detector.reset()
         AfkTabList.clear()
     }

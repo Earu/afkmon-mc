@@ -3,7 +3,7 @@ package gg.earu.afk.server
 import gg.earu.afk.Afk
 import gg.earu.afk.core.AfkConfig
 import gg.earu.afk.core.NiceTime
-import gg.earu.afk.core.PlayerAfkState
+import gg.earu.afk.api.AfkFlags
 import gg.earu.afk.core.ServerConfig
 import gg.earu.afk.api.Afkmon
 import gg.earu.afk.net.AfkPayloads
@@ -43,7 +43,7 @@ object AfkServer {
     lateinit var config: ServerConfig
         private set
 
-    private val states = ConcurrentHashMap<UUID, PlayerAfkState>()
+    private val states = ConcurrentHashMap<UUID, AfkFlags>()
 
     /** When each player last changed status, for the "present for X" half of the announcements. */
     private val lastTransitionMs = ConcurrentHashMap<UUID, Long>()
@@ -51,15 +51,20 @@ object AfkServer {
     /** Joiners awaiting their config/state sync, mapped to the give-up deadline. */
     private val pendingSync = ConcurrentHashMap<UUID, Long>()
 
+    /** Players whose client answered the handshake, for [gg.earu.afk.api.AfkStateView.hasMod]. */
+    private val modded: MutableSet<UUID> = ConcurrentHashMap.newKeySet()
+
     private var tickCounter = 0
 
     fun init(platform: Platform) {
         config = AfkConfig.loadServer(platform.configDir)
+        Afkmon.serverTracker.setAfkTimeSeconds(config.afkTimeSeconds)
+        Afkmon.serverTracker.setHasMod(modded::contains)
     }
 
     fun onPlayerJoin(player: ServerPlayer) {
         lastTransitionMs[player.uuid] = System.currentTimeMillis()
-        Afkmon.serverTracker.update(player.uuid, PlayerAfkState())
+        Afkmon.serverTracker.update(player.uuid, AfkFlags())
         // Channel negotiation may still be in flight at this point, so the sync is retried from
         // the tick loop until the channel shows up (or the deadline passes for vanilla clients).
         pendingSync[player.uuid] = System.currentTimeMillis() + SYNC_DEADLINE_MS
@@ -73,6 +78,7 @@ object AfkServer {
         }
 
         pendingSync.remove(player.uuid)
+        modded.add(player.uuid)
         sendToPlayer(player, AfkPayloads.ConfigPayload(config.afkTimeSeconds))
         // Catch the joiner up on everyone already flagged.
         for ((uuid, state) in states) {
@@ -83,14 +89,15 @@ object AfkServer {
     fun onPlayerLeave(player: ServerPlayer) {
         states.remove(player.uuid)
         Afkmon.serverTracker.remove(player.uuid)
+        modded.remove(player.uuid)
         lastTransitionMs.remove(player.uuid)
         pendingSync.remove(player.uuid)
         // Clear the rings everywhere: the entity can linger on clients for a moment.
-        broadcast(player.server, PlayerAfkState().toPayload(player.uuid))
+        broadcast(player.server, AfkFlags().toPayload(player.uuid))
     }
 
     fun onReport(player: ServerPlayer, payload: AfkPayloads.ReportPayload) {
-        val previous = states[player.uuid] ?: PlayerAfkState()
+        val previous = states[player.uuid] ?: AfkFlags()
         if (payload.afk == previous.afk && payload.tabbedOut == previous.tabbedOut) return
 
         val now = System.currentTimeMillis()
@@ -120,7 +127,7 @@ object AfkServer {
 
             val timingOut = keepAliveAge(player, now) > thresholdMs
 
-            val previous = states[player.uuid] ?: PlayerAfkState()
+            val previous = states[player.uuid] ?: AfkFlags()
             if (timingOut == previous.timingOut) continue
 
             Afk.LOGGER.info("{} {}", player.name.string, if (timingOut) "is timing out" else "is no longer timing out")
@@ -206,7 +213,7 @@ object AfkServer {
         }
     }
 
-    private fun PlayerAfkState.toPayload(uuid: UUID, announceSeconds: Int = AfkPayloads.NO_ANNOUNCEMENT) =
+    private fun AfkFlags.toPayload(uuid: UUID, announceSeconds: Int = AfkPayloads.NO_ANNOUNCEMENT) =
         AfkPayloads.StatePayload(uuid, afk, tabbedOut, timingOut, sinceEpochMs, announceSeconds)
 
     // Direct holders resolve on modded clients through sounds.json, no registry entry needed.

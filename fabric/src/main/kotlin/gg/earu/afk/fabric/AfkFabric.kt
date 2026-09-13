@@ -69,6 +69,7 @@ class AfkFabric : ModInitializer {
         Afk.init(platform)
         AfkServer.init(platform)
         Afkmon.addListener { change -> AfkEvents.STATE_CHANGE.invoker().onStateChange(change) }
+        Afkmon.addFlagsListener { change -> AfkEvents.FLAGS_CHANGE.invoker().onFlagsChange(change) }
 
         AfkServer.sendToPlayer = FabricChannels::sendToPlayer
         AfkServer.canSendTo = { player -> ServerPlayNetworking.canSend(player, FabricChannels.STATE) }
@@ -84,7 +85,8 @@ class AfkFabric : ModInitializer {
         }
 
         ServerPlayConnectionEvents.JOIN.register { handler, _, _ -> AfkServer.onPlayerJoin(handler.player) }
-        ServerPlayConnectionEvents.DISCONNECT.register { handler, _ -> AfkServer.onPlayerLeave(handler.player) }
+        // A timed-out connection fires DISCONNECT from the Netty thread; listeners are promised the server thread.
+        ServerPlayConnectionEvents.DISCONNECT.register { handler, server -> server.execute { AfkServer.onPlayerLeave(handler.player) } }
         ServerTickEvents.END_SERVER_TICK.register { server -> AfkServer.onTick(server) }
     }
 }
